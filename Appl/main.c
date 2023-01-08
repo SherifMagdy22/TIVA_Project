@@ -1,6 +1,6 @@
 #include "Timer.h"
 #include "IntCtrl.h"
-#include "GPIO.h"
+#include "LED_Driver.h"
 
 static uint32 OverflowCount=0;
 static uint32 remainder1=0;
@@ -9,8 +9,21 @@ static uint32 remainder2=0;
 static uint32 counts2=0;
 uint8 toggle=0;
 uint8 rem_done=0;
+extern uint8 t_on;
+extern uint8 t_off;
 
-void ISR_func(void){
+/*
+void GPIOB_ISR_func(void){
+	SET_BIT(GPIODATA,1);
+}
+	GPIOB_Save_Callback(&GPIOB_ISR_func);
+	GPIOISB &= 0x00000001;
+	GPIOIBEB &= 0x0000000;
+	GPIOIEVB |= 0x00000000;
+	GPIOIMB |= 0x0000000F;
+*/
+
+void SysTick_ISR_func(void){
 	if(toggle==0){
 		SET_BIT(GPIODATA,0);
 		STRELOAD &= 0xFF000000;
@@ -59,18 +72,18 @@ void time_select(uint8 t1, uint8 t2){
 
 int main(void){
 	
-
 	GPIO_Pin_Init(PORTA,0,OUTPUT);
+	GPIO_Pin_Init(PORTB,0,INPUT);
+	GPIO_Pin_Init(PORTB,4,INPUT);
 
-	time_select(20, 10);
 	SET_BIT(GPIODATA,0);
-	Timer_Init(remainder1);
-	rem_done=1;
-	
-	SysTick_Save_Callback(&ISR_func);
+	SysTick_Save_Callback(&SysTick_ISR_func);
 	IntCrtl_Init();
 	while(1){
-
+		change_blink_rate();
+		time_select(t_on, t_off);
+		Timer_Load(remainder1);
+		rem_done=1;
 	}
 }
 
