@@ -5,6 +5,6 @@
 
 #define Clock_freq 12000000
 
-void Timer_Init(uint32 ticks);
+void Timer_Load(uint32 ticks);
 
 #endif
